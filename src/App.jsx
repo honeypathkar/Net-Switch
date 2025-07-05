@@ -3,8 +3,15 @@ import React from 'react';
 
 const App = () => {
   return (
-    <View>
-      <Text>App</Text>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'red',
+      }}
+    >
+      <Text style={{ fontSize: 40 }}>App</Text>
     </View>
   );
 };
