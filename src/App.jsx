@@ -1,21 +1,48 @@
-import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'react-native';
 
-const App = () => {
+import { ThemeProvider, useThemeContext } from './context/ThemeContext';
+import { LightTheme, DarkTheme } from './theme/theme';
+import BottomTabNavigator from './navigator/BottomTabNavigator';
+
+const Stack = createNativeStackNavigator();
+
+function AppContent() {
+  const { isDarkMode } = useThemeContext();
+
+  const paperTheme = isDarkMode ? DarkTheme : LightTheme;
+
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'red',
-      }}
-    >
-      <Text style={{ fontSize: 40 }}>App</Text>
-    </View>
+    <PaperProvider theme={paperTheme}>
+      <StatusBar
+        backgroundColor={paperTheme.colors.background}
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+      />
+      <NavigationContainer theme={paperTheme}>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="MainApp" component={BottomTabNavigator} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PaperProvider>
   );
-};
+}
+
+function App() {
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </SafeAreaProvider>
+  );
+}
 
 export default App;
-
-const styles = StyleSheet.create({});
