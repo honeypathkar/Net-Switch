@@ -40,7 +40,7 @@ const AddZoneModal = ({ onClose, onZoneAdded }) => {
           if (ssid) setWifiName(ssid);
         }
       } catch (error) {
-        ToastAndroid.show('Could not fetch Wi-Fi name', ToastAndroid.SHORT);
+        showAlert({ msg: 'Could not fetch Wi-Fi name' });
       }
     };
     fetchWifi();
@@ -48,7 +48,7 @@ const AddZoneModal = ({ onClose, onZoneAdded }) => {
 
   const handleSaveZone = async () => {
     if (!wifiName.trim()) {
-      Alert.alert('Input Required', 'Please enter a WiFi Network Name.');
+      showAlert({ msg: 'Please enter a WiFi Network Name.' });
       return;
     }
 
@@ -74,15 +74,12 @@ const AddZoneModal = ({ onClose, onZoneAdded }) => {
       );
 
       if (isDuplicateName) {
-        ToastAndroid.show('This WiFi name already exists.', ToastAndroid.SHORT);
+        showAlert({ msg: 'This WiFi name already exists.' });
         return;
       }
 
       if (isDuplicateLocation) {
-        ToastAndroid.show(
-          'This location is already saved.',
-          ToastAndroid.SHORT,
-        );
+        showAlert({ msg: 'This location is already saved.' });
         return;
       }
 
@@ -102,7 +99,7 @@ const AddZoneModal = ({ onClose, onZoneAdded }) => {
       onClose();
     } catch (error) {
       console.error('Save error:', error);
-      Alert.alert('Error', 'Failed to save the trusted zone.');
+      showAlert({ msg: 'Failed to save the trusted zone.' });
     }
   };
 
@@ -185,12 +182,34 @@ const AddZoneModal = ({ onClose, onZoneAdded }) => {
       <View style={styles.mapContainer}>
         <MapView
           ref={mapRef}
+          provider="google"
           style={StyleSheet.absoluteFillObject}
           initialRegion={region}
-          onMapReady={() => setIsMapReady(true)}
-          onPress={onMapPress}
           showsUserLocation={isMapReady}
           showsMyLocationButton={false}
+          onMapReady={() => setIsMapReady(true)}
+          //           ref={mapRef}
+          // style={StyleSheet.absoluteFillObject}
+          // initialRegion={region}
+          // onMapReady={() => setIsMapReady(true)}
+          // onPress={onMapPress}
+          // showsUserLocation={isMapReady}
+          // showsMyLocationButton={false}
+          onPress={onMapPress}
+          onUserLocationChange={e => {
+            const { latitude, longitude } = e.nativeEvent.coordinate;
+
+            const newRegion = {
+              latitude,
+              longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            };
+
+            setRegion(newRegion);
+            setMarkerPosition(newRegion); // Set the marker at current location
+            mapRef.current?.animateToRegion(newRegion, 1000);
+          }}
         >
           {isMapReady && (
             <Marker

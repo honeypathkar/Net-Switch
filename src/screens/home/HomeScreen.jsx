@@ -38,6 +38,7 @@ const HomeScreen = () => {
           ...zonesObject[key],
         }));
         setSavedZones(zonesArray);
+        console.log(zonesArray);
       }
     } catch (error) {
       console.error('Failed to load zones from storage', error);
@@ -155,8 +156,11 @@ const HomeScreen = () => {
     <List.Item
       style={styles.listItem}
       title={`Trusted Zone ${index + 1}`}
-      description={item.name}
+      description={`WiFi: ${item.name}\nLat: ${item.lat?.toFixed(
+        4,
+      )}, Lng: ${item.long?.toFixed(4)}`}
       titleStyle={styles.listItemTitle}
+      descriptionNumberOfLines={3}
       descriptionStyle={styles.listItemDescription}
       left={() => (
         <Avatar.Icon
