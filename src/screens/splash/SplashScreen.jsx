@@ -1,11 +1,26 @@
-import { StyleSheet, View, Dimensions, Image } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Dimensions,
+  Image,
+  Platform,
+  ToastAndroid,
+} from 'react-native';
 import React, { useEffect } from 'react';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withDelay,
+  runOnJS,
 } from 'react-native-reanimated';
+import {
+  requestMultiple,
+  request,
+  PERMISSIONS,
+  RESULTS,
+} from 'react-native-permissions';
+import { showAlert } from '../../utils/alert';
 
 const { width, height } = Dimensions.get('window');
 const CIRCLE_SIZE = Math.sqrt(width ** 2 + height ** 2);
@@ -14,32 +29,64 @@ const SplashScreen = ({ navigation }) => {
   const scale = useSharedValue(0);
   const logoOpacity = useSharedValue(0);
 
+  const initializeApp = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const fineLocation = PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+        const coarseLocation = PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION;
+        const backgroundLocation =
+          PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION;
+
+        const result = await requestMultiple([fineLocation, coarseLocation]);
+
+        const fineGranted = result[fineLocation] === RESULTS.GRANTED;
+
+        if (!fineGranted) {
+          showAlert('Please grant location permission to continue.');
+          return;
+        }
+
+        if (Platform.Version >= 29) {
+          const backgroundResult = await request(backgroundLocation);
+          console.log('🛑 Background Location Result:', backgroundResult);
+        }
+
+        navigation.replace('MainApp');
+      } catch (err) {
+        console.warn('❌ Permission error:', err);
+      }
+    } else {
+      navigation.replace('MainApp');
+    }
+  };
+
   useEffect(() => {
     scale.value = withDelay(250, withTiming(1, { duration: 1000 }));
-    logoOpacity.value = withDelay(1500, withTiming(1, { duration: 500 }));
+    logoOpacity.value = withDelay(
+      1500,
+      withTiming(1, { duration: 500 }, () => {
+        runOnJS(initializeApp)();
+      }),
+    );
+  }, []);
 
-    setTimeout(() => {
-      navigation.replace('MainApp');
-    }, 2500);
-  }, [navigation, scale, logoOpacity]);
+  const animatedStyleDot = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
-  const animatedStyleDot = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
-
-  const animatedStyleLogo = useAnimatedStyle(() => {
-    return {
-      opacity: logoOpacity.value,
-    };
-  });
+  const animatedStyleLogo = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+  }));
 
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.dot, animatedStyleDot]} />
       <Animated.View style={[styles.logoContainer, animatedStyleLogo]}>
-        <Image source={require('../../assets/logo.png')} style={styles.logo} />
+        <Image
+          source={require('../../assets/logo.png')}
+          style={styles.logo}
+          onError={e => console.log('Error loading logo:', e.nativeEvent.error)}
+        />
       </Animated.View>
     </View>
   );
