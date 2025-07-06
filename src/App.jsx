@@ -8,6 +8,7 @@ import { StatusBar } from 'react-native';
 import { ThemeProvider, useThemeContext } from './context/ThemeContext';
 import { LightTheme, DarkTheme } from './theme/theme';
 import BottomTabNavigator from './navigator/BottomTabNavigator';
+import SplashScreen from './screens/splash/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ function AppContent() {
             headerShown: false,
           }}
         >
+          <Stack.Screen name="Splash" component={SplashScreen} />
           <Stack.Screen name="MainApp" component={BottomTabNavigator} />
         </Stack.Navigator>
       </NavigationContainer>

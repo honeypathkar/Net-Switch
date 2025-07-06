@@ -24,6 +24,7 @@ const HeaderBar = () => {
           width: 28,
           height: 28,
           marginRight: 8,
+          borderRadius: 8,
         },
       }),
     [theme],
